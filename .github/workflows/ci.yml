@@ -30,7 +30,7 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm smoke
-      - run: npm pack --dry-run
+      - run: pnpm pack --dry-run
 
   node18:
     name: Built package on Node 18
