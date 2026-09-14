@@ -1,0 +1,84 @@
+{
+  "name": "@gege-mn/ray",
+  "version": "0.1.0",
+  "description": "Official TypeScript SDK for Ray, the multi-tenant notification delivery API (email, push, Slack, Discord, Telegram, webhooks, in-app feeds).",
+  "keywords": [
+    "ray",
+    "notifications",
+    "email",
+    "push",
+    "fcm",
+    "slack",
+    "discord",
+    "telegram",
+    "webhooks",
+    "in-app feed",
+    "sdk"
+  ],
+  "license": "MIT",
+  "author": "gege.mn",
+  "homepage": "https://ray.gege.mn/docs/sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gege-mn/ray-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gege-mn/ray-node/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "smoke": "node scripts/smoke.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "generate": "node scripts/fetch-openapi.mjs && openapi-typescript openapi/openapi.json -o src/generated/openapi.ts --default-non-nullable false && node scripts/postprocess-openapi.mjs && biome format --write src/generated/openapi.ts",
+    "prepublishOnly": "pnpm run typecheck && pnpm run test && pnpm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.14",
+    "@types/node": "^22.10.0",
+    "openapi-typescript": "^7.9.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
