@@ -358,7 +358,7 @@ Channels are configured in the dashboard. `channelConfigId` in `send()` is a cha
 | `sendsms_mn` | `sms_text` | `{ phoneNumber }` (Mongolian 8 digits, e.g. `'99112233'`) | `{ text }` |
 | `generic_webhook` | `webhook_json` | `{}` | `{ title, body, data? }` |
 
-SMS (`twilio_sms`, `sendsms_mn`) is plain text; param values are inserted verbatim. Length is checked after params are filled in, and `send()` / `testSend()` throw a `400` when it's exceeded: Twilio allows 1600 characters, sendsms.mn sends a single SMS of at most 159 characters of plain Latin (GSM-7) text, or 69 once the text has any other character, such as Cyrillic.
+SMS (`twilio_sms`, `sendsms_mn`) is plain text of up to 1600 characters; param values are inserted verbatim. On Twilio, text longer than 1600 characters after params are filled in makes `send()` / `testSend()` throw a `400`. Long messages go out as several SMS. Twilio splits them itself. sendsms.mn accepts one SMS per request, so Ray splits the message at spaces and line breaks into parts of at most 159 characters of plain Latin (GSM-7) text, or 69 once a part has any other character, such as Cyrillic; each part is sent in order, billed as one SMS and arrives as a separate message. A split message's `providerMessageId` is the comma-separated sendsms.mn ids, and it counts once toward `ratePerMinute`. sendsms.mn failures after which an SMS may already be out (a timeout, or any failure after the first part was sent) are not retried, to avoid sending it twice.
 
 ```ts
 await ray.send({

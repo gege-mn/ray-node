@@ -178,11 +178,13 @@ export interface TelegramContent {
 
 /**
  * `sms_text`, for `twilio_sms` and `sendsms_mn`. Plain text: no markup, param
- * values are inserted verbatim. Length is checked after params are rendered
- * (`400` from `send()` / `testSend()` when exceeded): Twilio allows 1600
- * characters; sendsms.mn sends one SMS, so at most 159 characters of GSM-7
- * text (plain Latin), or 69 once the text has any other character, such as
- * Cyrillic.
+ * values are inserted verbatim. Up to 1600 characters; on Twilio, longer text
+ * after params are rendered is a `400` from `send()` / `testSend()`. Long
+ * messages go out as several SMS: Twilio splits them itself; for sendsms.mn,
+ * which takes one SMS per request, Ray splits at spaces and line breaks into
+ * parts of at most 159 characters of GSM-7 text (plain Latin), or 69 once a
+ * part has any other character, such as Cyrillic. Each part is sent in order,
+ * billed as one SMS and arrives as a separate message.
  */
 export interface SmsTextContent {
   /** 1 to 1600 characters. */
