@@ -12,4 +12,5 @@ Initial release.
 - `RayError` with `status`, `code`, `message`, `requestId`, `retryAfter`.
 - Webhook helpers: `verifyWebhookSignature`, `parseWebhookEvent`, `signWebhookPayload`, `verifyChannelWebhookSignature`, `parseChannelWebhook` (Web Crypto, edge-compatible).
 - Types generated from the Ray OpenAPI spec, with hand-written request types per send mode and channel.
+- SMS channels: `twilio_sms` and `sendsms_mn` channel types, the `sms_text` template kind, `TwilioSmsRecipient`, `SendsmsMnRecipient` and `SmsTextContent`.
 - Zero runtime dependencies. ESM + CJS. Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge.

@@ -5,7 +5,7 @@ The official TypeScript SDK for [Ray](https://ray.gege.mn), the notification del
 [![npm](https://img.shields.io/npm/v/@gege-mn/ray)](https://www.npmjs.com/package/@gege-mn/ray)
 [![CI](https://github.com/gege-mn/ray-node/actions/workflows/ci.yml/badge.svg)](https://github.com/gege-mn/ray-node/actions/workflows/ci.yml)
 
-Ray is a multi-tenant notification delivery API (not the Ray distributed computing framework). You configure channels once (Amazon SES or SMTP email, Firebase push, Slack, Discord, Telegram, or your own HTTPS webhook), keep message templates in Ray, and send with one `POST /send` call: to one recipient, fanned out to up to 1000 recipients, or to one person over several channels at once. Ray queues and paces delivery per provider, retries transient failures, tracks per-recipient status, keeps an in-app notification feed per end user, and calls your webhooks when deliveries finish.
+Ray is a multi-tenant notification delivery API (not the Ray distributed computing framework). You configure channels once (Amazon SES or SMTP email, Firebase push, Slack, Discord, Telegram, SMS through Twilio or sendsms.mn, or your own HTTPS webhook), keep message templates in Ray, and send with one `POST /send` call: to one recipient, fanned out to up to 1000 recipients, or to one person over several channels at once. Ray queues and paces delivery per provider, retries transient failures, tracks per-recipient status, keeps an in-app notification feed per end user, and calls your webhooks when deliveries finish.
 
 - Zero runtime dependencies, built on `fetch` and Web Crypto
 - ESM and CommonJS, full TypeScript types
@@ -354,7 +354,24 @@ Channels are configured in the dashboard. `channelConfigId` in `send()` is a cha
 | `slack_webhook` | `slack_text` | `{}` | `{ text }` |
 | `discord_webhook` | `discord_text` | `{}` | `{ content }` |
 | `telegram_bot` | `telegram_text` | `{ chatId }` | `{ text, disableLinkPreview? }` |
+| `twilio_sms` | `sms_text` | `{ phoneNumber }` (E.164, e.g. `'+97699112233'`) | `{ text }` |
+| `sendsms_mn` | `sms_text` | `{ phoneNumber }` (Mongolian 8 digits, e.g. `'99112233'`) | `{ text }` |
 | `generic_webhook` | `webhook_json` | `{}` | `{ title, body, data? }` |
+
+SMS (`twilio_sms`, `sendsms_mn`) is plain text; param values are inserted verbatim. Length is checked after params are filled in, and `send()` / `testSend()` throw a `400` when it's exceeded: Twilio allows 1600 characters, sendsms.mn sends a single SMS of at most 159 characters of plain Latin (GSM-7) text, or 69 once the text has any other character, such as Cyrillic.
+
+```ts
+await ray.send({
+  channelConfigId: '8e9f0a1b-2c3d-4e5f-8a6b-7c8d9e0f1a2b', // twilio_sms
+  content: { text: 'Your Acme code is {{code}}. It expires in 10 minutes.' },
+  logTitle: 'Login code',
+  logDescription: 'Login code sent by SMS',
+  params: { code: '482913' },
+  recipient: { phoneNumber: '+97699112233' }, // sendsms_mn: '99112233'
+});
+```
+
+Failed SMS deliveries carry `providerError.name` `TwilioError` or `SendsmsMnError` on the delivery row.
 
 ## Click stats
 
@@ -622,8 +639,8 @@ import type {
   SendDetail,
   SendRow,
   DeliveryStatus,
-  Recipient, // EmailRecipient | FcmRecipient | TelegramRecipient | EmptyRecipient
-  TemplateContent, // EmailHtmlContent | FcmContent | SlackContent | DiscordContent | TelegramContent | WebhookJsonContent
+  Recipient, // EmailRecipient | FcmRecipient | TelegramRecipient | TwilioSmsRecipient | SendsmsMnRecipient | EmptyRecipient
+  TemplateContent, // EmailHtmlContent | FcmContent | SlackContent | DiscordContent | TelegramContent | SmsTextContent | WebhookJsonContent
   Template,
   TemplateDetail,
   TemplateUpsertBody,

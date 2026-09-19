@@ -33,15 +33,18 @@ export type ChannelType =
   | 'slack_webhook'
   | 'discord_webhook'
   | 'telegram_bot'
+  | 'twilio_sms'
+  | 'sendsms_mn'
   | 'generic_webhook';
 
-/** Template kinds. Each channel type accepts exactly one. */
+/** Template kinds. Each channel type accepts exactly one (`twilio_sms` and `sendsms_mn` share `sms_text`). */
 export type TemplateKind =
   | 'email_html'
   | 'fcm_basic'
   | 'slack_text'
   | 'discord_text'
   | 'telegram_text'
+  | 'sms_text'
   | 'webhook_json';
 
 /** Open variants for response fields, so a new server-side value doesn't break type narrowing. */
@@ -91,10 +94,33 @@ export interface TelegramRecipient {
   chatId: string;
 }
 
+/**
+ * Recipient for `twilio_sms`: an international E.164 number such as
+ * `+97699112233`. Spaces, dashes, dots and parentheses are removed and a
+ * leading `00` is read as `+`; a number without a country code is a `400`.
+ */
+export interface TwilioSmsRecipient {
+  phoneNumber: string;
+}
+
+/**
+ * Recipient for `sendsms_mn`: a Mongolian 8-digit number such as `99112233`
+ * (spaces, dashes and a `+976` prefix are removed; any other length is a `400`).
+ */
+export interface SendsmsMnRecipient {
+  phoneNumber: string;
+}
+
 /** Recipient for `slack_webhook`, `discord_webhook` and `generic_webhook` (the destination lives in the channel config). */
 export type EmptyRecipient = Record<string, never>;
 
-export type Recipient = EmailRecipient | FcmRecipient | TelegramRecipient | EmptyRecipient;
+export type Recipient =
+  | EmailRecipient
+  | FcmRecipient
+  | TelegramRecipient
+  | TwilioSmsRecipient
+  | SendsmsMnRecipient
+  | EmptyRecipient;
 
 /** Maps a channel type to its recipient shape. */
 export interface RecipientByChannel {
@@ -102,6 +128,8 @@ export interface RecipientByChannel {
   smtp_email: EmailRecipient;
   fcm_push: FcmRecipient;
   telegram_bot: TelegramRecipient;
+  twilio_sms: TwilioSmsRecipient;
+  sendsms_mn: SendsmsMnRecipient;
   slack_webhook: EmptyRecipient;
   discord_webhook: EmptyRecipient;
   generic_webhook: EmptyRecipient;
@@ -148,6 +176,19 @@ export interface TelegramContent {
   disableLinkPreview?: boolean;
 }
 
+/**
+ * `sms_text`, for `twilio_sms` and `sendsms_mn`. Plain text: no markup, param
+ * values are inserted verbatim. Length is checked after params are rendered
+ * (`400` from `send()` / `testSend()` when exceeded): Twilio allows 1600
+ * characters; sendsms.mn sends one SMS, so at most 159 characters of GSM-7
+ * text (plain Latin), or 69 once the text has any other character, such as
+ * Cyrillic.
+ */
+export interface SmsTextContent {
+  /** 1 to 1600 characters. */
+  text: string;
+}
+
 /** `webhook_json`: the envelope your endpoint receives is `{ id, title, body, data?, sentAt }`. */
 export interface WebhookJsonContent {
   /** 1 to 200 characters. */
@@ -163,6 +204,7 @@ export type TemplateContent =
   | SlackContent
   | DiscordContent
   | TelegramContent
+  | SmsTextContent
   | WebhookJsonContent;
 
 /** Maps a template kind to its content shape. */
@@ -172,6 +214,7 @@ export interface ContentByTemplateKind {
   slack_text: SlackContent;
   discord_text: DiscordContent;
   telegram_text: TelegramContent;
+  sms_text: SmsTextContent;
   webhook_json: WebhookJsonContent;
 }
 

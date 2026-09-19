@@ -118,6 +118,19 @@ describe('ray.send()', () => {
       ],
       ['feed-only', { externalUserId: 'user_42', feed: { title: 'Your export is ready' } }],
       [
+        'sms fan-out (twilio_sms / sendsms_mn)',
+        {
+          channelConfigId: CHANNEL,
+          content: { text: 'Your code is {{code}}' },
+          logTitle: 'Login code',
+          params: { code: '482913' },
+          targets: [
+            { recipient: { phoneNumber: '+97699112233' } },
+            { recipient: { phoneNumber: '99112233' } },
+          ],
+        },
+      ],
+      [
         'inline content, scheduled, with attachments',
         {
           channelConfigId: CHANNEL,

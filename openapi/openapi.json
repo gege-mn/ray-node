@@ -50,6 +50,10 @@
       "description": "Subscriptions, checkout, and usage"
     },
     {
+      "name": "MCP",
+      "description": "Hosted Model Context Protocol server for AI agents"
+    },
+    {
       "name": "Auth",
       "description": "API-key context"
     },
@@ -143,7 +147,7 @@
                   "maxLength": 2000
                 },
                 "recipient": {
-                  "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
+                  "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
                   "anyOf": [
                     {
                       "$ref": "#/components/schemas/EmailRecipient"
@@ -153,6 +157,12 @@
                     },
                     {
                       "$ref": "#/components/schemas/TelegramRecipient"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TwilioSmsRecipient"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SendsmsMnRecipient"
                     },
                     {
                       "$ref": "#/components/schemas/EmptyRecipient"
@@ -202,7 +212,7 @@
             "maxLength": 2000
           },
           "recipient": {
-            "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
+            "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
             "anyOf": [
               {
                 "$ref": "#/components/schemas/EmailRecipient"
@@ -212,6 +222,12 @@
               },
               {
                 "$ref": "#/components/schemas/TelegramRecipient"
+              },
+              {
+                "$ref": "#/components/schemas/TwilioSmsRecipient"
+              },
+              {
+                "$ref": "#/components/schemas/SendsmsMnRecipient"
               },
               {
                 "$ref": "#/components/schemas/EmptyRecipient"
@@ -282,7 +298,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "recipient": {
-            "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
+            "description": "Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config).",
             "anyOf": [
               {
                 "$ref": "#/components/schemas/EmailRecipient"
@@ -292,6 +308,12 @@
               },
               {
                 "$ref": "#/components/schemas/TelegramRecipient"
+              },
+              {
+                "$ref": "#/components/schemas/TwilioSmsRecipient"
+              },
+              {
+                "$ref": "#/components/schemas/SendsmsMnRecipient"
               },
               {
                 "$ref": "#/components/schemas/EmptyRecipient"
@@ -333,6 +355,7 @@
               "slack_text",
               "discord_text",
               "telegram_text",
+              "sms_text",
               "webhook_json"
             ]
           },
@@ -571,6 +594,30 @@
         "required": [
           "chatId"
         ]
+      },
+      "TwilioSmsRecipient": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneNumber"
+        ],
+        "description": "twilio_sms: an international number in E.164 form, e.g. +97699112233."
+      },
+      "SendsmsMnRecipient": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneNumber"
+        ],
+        "description": "sendsms_mn: a Mongolian 8-digit number, e.g. 99112233 (+976 is stripped)."
       },
       "EmptyRecipient": {
         "type": "object",
@@ -2592,6 +2639,93 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "tags": [
+          "MCP"
+        ],
+        "summary": "Hosted MCP server (Streamable HTTP)",
+        "description": "Model Context Protocol endpoint for AI agents and MCP clients (Claude Code, Cursor, VS Code, …). Stateless Streamable HTTP with JSON responses: send JSON-RPC 2.0 messages (`initialize`, `tools/list`, `tools/call`) with `Accept: application/json, text/event-stream`. Authenticate with the same API key as the REST API; a missing or malformed key is refused with 401 before any MCP processing, and `initialize` verifies the key. Each tool maps to one REST endpoint and is subject to the same scopes, rate limits and quota; REST failures come back as tool results with `isError: true`. JSON-RPC batches are not supported, and GET/DELETE return 405 (no SSE stream or sessions). Setup: https://ray.gege.mn/docs/ai-agents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "A single JSON-RPC 2.0 request or notification.",
+                "required": [
+                  "jsonrpc",
+                  "method"
+                ],
+                "properties": {
+                  "jsonrpc": {
+                    "const": "2.0"
+                  },
+                  "id": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ]
+                  },
+                  "method": {
+                    "type": "string",
+                    "examples": [
+                      "initialize",
+                      "tools/list",
+                      "tools/call"
+                    ]
+                  },
+                  "params": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Notification accepted (no response body)"
+          },
+          "400": {
+            "description": "Malformed JSON or JSON-RPC message"
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Accept header must include application/json and text/event-stream"
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
                 }
               }
             }

@@ -1059,6 +1059,99 @@ export interface paths {
     };
     trace?: never;
   };
+  '/mcp': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Hosted MCP server (Streamable HTTP)
+     * @description Model Context Protocol endpoint for AI agents and MCP clients (Claude Code, Cursor, VS Code, …). Stateless Streamable HTTP with JSON responses: send JSON-RPC 2.0 messages (`initialize`, `tools/list`, `tools/call`) with `Accept: application/json, text/event-stream`. Authenticate with the same API key as the REST API; a missing or malformed key is refused with 401 before any MCP processing, and `initialize` verifies the key. Each tool maps to one REST endpoint and is subject to the same scopes, rate limits and quota; REST failures come back as tool results with `isError: true`. JSON-RPC batches are not supported, and GET/DELETE return 405 (no SSE stream or sessions). Setup: https://ray.gege.mn/docs/ai-agents
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            /** @constant */
+            jsonrpc: '2.0';
+            id?: string | number;
+            /**
+             * @example initialize
+             * @example tools/list
+             * @example tools/call
+             */
+            method: string;
+            params?: Record<string, never>;
+          };
+        };
+      };
+      responses: {
+        /** @description JSON-RPC response */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': Record<string, never>;
+          };
+        };
+        /** @description Notification accepted (no response body) */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Malformed JSON or JSON-RPC message */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Error */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['Error'];
+          };
+        };
+        /** @description Accept header must include application/json and text/event-stream */
+        406: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Rate limited */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['RateLimitError'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/webhooks/{channelType}/{channelConfigId}': {
     parameters: {
       query?: never;
@@ -1346,11 +1439,13 @@ export interface components {
         };
         logTitle?: string;
         logDescription?: string;
-        /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
+        /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
         recipient:
           | components['schemas']['EmailRecipient']
           | components['schemas']['FcmRecipient']
           | components['schemas']['TelegramRecipient']
+          | components['schemas']['TwilioSmsRecipient']
+          | components['schemas']['SendsmsMnRecipient']
           | components['schemas']['EmptyRecipient'];
       }[];
       feed?: {
@@ -1369,11 +1464,13 @@ export interface components {
       };
       logTitle?: string;
       logDescription?: string;
-      /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
+      /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
       recipient?:
         | components['schemas']['EmailRecipient']
         | components['schemas']['FcmRecipient']
         | components['schemas']['TelegramRecipient']
+        | components['schemas']['TwilioSmsRecipient']
+        | components['schemas']['SendsmsMnRecipient']
         | components['schemas']['EmptyRecipient'];
       targets?: {
         recipient: unknown;
@@ -1401,11 +1498,13 @@ export interface components {
     TestSendBody: {
       /** Format: uuid */
       channelConfigId: string;
-      /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
+      /** @description Channel-specific delivery target, validated against the channel of the chosen channelConfigId: `EmailRecipient` for ses_email and smtp_email, `FcmRecipient` for fcm_push, `TelegramRecipient` for telegram_bot, `TwilioSmsRecipient` for twilio_sms, `SendsmsMnRecipient` for sendsms_mn, and `{}` for slack_webhook, discord_webhook and generic_webhook (their destination is part of the channel config). */
       recipient:
         | components['schemas']['EmailRecipient']
         | components['schemas']['FcmRecipient']
         | components['schemas']['TelegramRecipient']
+        | components['schemas']['TwilioSmsRecipient']
+        | components['schemas']['SendsmsMnRecipient']
         | components['schemas']['EmptyRecipient'];
       /**
        * @description Template parameters substituted at render time. Values may be any JSON (strings, numbers, booleans, arrays, nested objects) so templates can iterate arrays/objects in `{{#section}}…{{/section}}` blocks. Scalars are escaped for the field they land in (see https://ray.gege.mn/docs/templates#escaping).
@@ -1426,6 +1525,7 @@ export interface components {
         | 'slack_text'
         | 'discord_text'
         | 'telegram_text'
+        | 'sms_text'
         | 'webhook_json';
       content: unknown;
       logTitle: string;
@@ -1486,6 +1586,14 @@ export interface components {
     };
     TelegramRecipient: {
       chatId: string;
+    };
+    /** @description twilio_sms: an international number in E.164 form, e.g. +97699112233. */
+    TwilioSmsRecipient: {
+      phoneNumber: string;
+    };
+    /** @description sendsms_mn: a Mongolian 8-digit number, e.g. 99112233 (+976 is stripped). */
+    SendsmsMnRecipient: {
+      phoneNumber: string;
     };
     /** @description slack_webhook, discord_webhook and generic_webhook take an empty recipient. */
     EmptyRecipient: Record<string, never>;

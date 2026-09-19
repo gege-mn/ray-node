@@ -1,7 +1,7 @@
 {
   "name": "@gege-mn/ray",
   "version": "0.1.0",
-  "description": "Official TypeScript SDK for Ray, the multi-tenant notification delivery API (email, push, Slack, Discord, Telegram, webhooks, in-app feeds).",
+  "description": "Official TypeScript SDK for Ray, the multi-tenant notification delivery API (email, push, Slack, Discord, Telegram, SMS, webhooks, in-app feeds).",
   "keywords": [
     "ray",
     "notifications",
@@ -11,6 +11,8 @@
     "slack",
     "discord",
     "telegram",
+    "sms",
+    "twilio",
     "webhooks",
     "in-app feed",
     "sdk"
