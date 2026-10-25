@@ -77,6 +77,22 @@ export interface EmailRecipient extends EmailAddress {
   cc?: EmailAddress[];
   /** Up to 50. */
   bcc?: EmailAddress[];
+  /**
+   * Sender for this send. Each field you leave out keeps the channel config's
+   * value, so `{ name: 'Ada at Acme' }` only changes the display name. The
+   * address must be on the same domain as the config's from address (a `400`
+   * otherwise) and one your provider lets you send as (a verified SES identity).
+   */
+  from?: { email?: string; name?: string };
+  /** `Reply-To` addresses, 1 to 10. */
+  replyTo?: EmailAddress[];
+  /**
+   * Extra headers such as `List-Unsubscribe` or `X-*` tags, up to 15. Printable
+   * ASCII only; headers Ray sets itself (`From`, `Reply-To`, `To`, `Cc`, `Bcc`,
+   * `Subject`, `Message-ID`, …) and provider controls (`X-SES-*`, `X-SMTPAPI`,
+   * `X-PM-*`, `X-Mailgun-*`, …) are rejected with a `400`.
+   */
+  headers?: Record<string, string>;
   /** Up to 20. */
   attachments?: EmailAttachment[];
 }

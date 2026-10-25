@@ -1578,6 +1578,22 @@ export interface components {
         disposition?: 'attachment' | 'inline';
         contentId?: string;
       }[];
+      /** @description Per-send sender. Each omitted field keeps the channel config's fromAddress / fromName. The email must be on the same domain as the config's fromAddress (400 otherwise) and one the provider lets you send as. */
+      from?: {
+        /** Format: email */
+        email?: string;
+        name?: string;
+      };
+      /** @description Reply-To addresses. */
+      replyTo?: {
+        /** Format: email */
+        email: string;
+        name?: string;
+      }[];
+      /** @description Extra headers, { "Name": "value" }: at most 15, printable ASCII, value 1 to 995 characters. Rejected: From, Sender, Reply-To, To, Cc, Bcc, Subject, Date, Message-ID, Return-Path, MIME-Version, Content-Type, Content-Disposition, Content-Transfer-Encoding, and provider controls (X-SES-*, X-SMTPAPI, X-MC-*, X-MSYS-*, X-PM-*, X-Mailgun-*, X-MJ-*, X-Mailjet-*, X-Mailin-*). */
+      headers?: {
+        [key: string]: string;
+      };
     };
     /** @description Per-send delivery target — supply exactly one of `deviceToken` or `topic`. Ray keeps no device registry: pass the FCM token (obtained from your client SDK and stored in your own system) on every send, or a topic name for multi-device fan-out. There is no "register device" step. */
     FcmRecipient: {

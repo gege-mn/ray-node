@@ -562,6 +562,56 @@
                 "content"
               ]
             }
+          },
+          "from": {
+            "description": "Per-send sender. Each omitted field keeps the channel config's fromAddress / fromName. The email must be on the same domain as the config's fromAddress (400 otherwise) and one the provider lets you send as.",
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              }
+            }
+          },
+          "replyTo": {
+            "description": "Reply-To addresses.",
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          },
+          "headers": {
+            "description": "Extra headers, { \"Name\": \"value\" }: at most 15, printable ASCII, value 1 to 995 characters. Rejected: From, Sender, Reply-To, To, Cc, Bcc, Subject, Date, Message-ID, Return-Path, MIME-Version, Content-Type, Content-Disposition, Content-Transfer-Encoding, and provider controls (X-SES-*, X-SMTPAPI, X-MC-*, X-MSYS-*, X-PM-*, X-Mailgun-*, X-MJ-*, X-Mailjet-*, X-Mailin-*).",
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "required": [

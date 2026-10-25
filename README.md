@@ -233,6 +233,26 @@ await ray.send({
 });
 ```
 
+### Email sender, reply-to and headers
+
+The channel config's from address and name are the default. Override them per send with `from` (each field you leave out keeps the config's value), and set `replyTo` and custom `headers` on the same recipient:
+
+```ts
+await ray.send({
+  channelConfigId: '9f1c2a7e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
+  templateId: '1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a',
+  params: { number: 'INV-1042' },
+  recipient: {
+    email: 'ada@example.com',
+    from: { email: 'billing@example.com', name: 'Example Billing' },
+    replyTo: [{ email: 'support@example.com', name: 'Support' }],
+    headers: { 'List-Unsubscribe': '<https://example.com/unsubscribe/ada>' },
+  },
+});
+```
+
+The from address must be on the same domain as the channel config's from address (another domain, including a subdomain, is a `400`), and one your provider lets you send as (a verified SES identity, or an address your SMTP server accepts). Header names and values are printable ASCII, up to 15 headers. Headers Ray sets itself (`From`, `Reply-To`, `To`, `Cc`, `Bcc`, `Subject`, `Message-ID`, …) and provider controls (`X-SES-*`, `X-SMTPAPI`, `X-MC-*`, `X-MSYS-*`, `X-PM-*`, `X-Mailgun-*`, `X-MJ-*`, `X-Mailjet-*`, `X-Mailin-*`) are rejected with a `400`.
+
 ### Other send fields
 
 | Field | Notes |
@@ -349,7 +369,7 @@ Channels are configured in the dashboard. `channelConfigId` in `send()` is a cha
 
 | Channel `kind` | Template kind | `recipient` | Inline `content` |
 | --- | --- | --- | --- |
-| `ses_email`, `smtp_email` | `email_html` | `{ email, name?, cc?, bcc?, attachments? }` | `{ subject, bodyHtml, bodyText }` |
+| `ses_email`, `smtp_email` | `email_html` | `{ email, name?, cc?, bcc?, from?, replyTo?, headers?, attachments? }` | `{ subject, bodyHtml, bodyText }` |
 | `fcm_push` | `fcm_basic` | `{ deviceToken }` or `{ topic }` | `{ title, body, imageUrl?, data? }` |
 | `slack_webhook` | `slack_text` | `{}` | `{ text }` |
 | `discord_webhook` | `discord_text` | `{}` | `{ content }` |
