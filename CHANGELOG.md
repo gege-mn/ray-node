@@ -2,7 +2,12 @@
 
 All notable changes to `@gege-mn/ray` are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
-## 0.1.0 (unreleased)
+## 0.2.0 (2026-10-25)
+
+- SMS channels: `twilio_sms` and `sendsms_mn` channel types, the `sms_text` template kind, `TwilioSmsRecipient`, `SendsmsMnRecipient` and `SmsTextContent`.
+- `EmailRecipient.from` (per-send sender override), `EmailRecipient.replyTo` and `EmailRecipient.headers` (custom headers) for `ses_email` and `smtp_email`.
+
+## 0.1.0 (2026-09-14)
 
 Initial release.
 
@@ -12,6 +17,4 @@ Initial release.
 - `RayError` with `status`, `code`, `message`, `requestId`, `retryAfter`.
 - Webhook helpers: `verifyWebhookSignature`, `parseWebhookEvent`, `signWebhookPayload`, `verifyChannelWebhookSignature`, `parseChannelWebhook` (Web Crypto, edge-compatible).
 - Types generated from the Ray OpenAPI spec, with hand-written request types per send mode and channel.
-- SMS channels: `twilio_sms` and `sendsms_mn` channel types, the `sms_text` template kind, `TwilioSmsRecipient`, `SendsmsMnRecipient` and `SmsTextContent`.
-- `EmailRecipient.from` (per-send sender override), `EmailRecipient.replyTo` and `EmailRecipient.headers` (custom headers) for `ses_email` and `smtp_email`.
 - Zero runtime dependencies. ESM + CJS. Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge.

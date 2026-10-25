@@ -4,7 +4,7 @@
  * module load time.
  */
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 /** Reads an environment variable when a `process.env` exists (Node, Bun, Deno 2). */
 export function readEnv(name: string): string | undefined {
